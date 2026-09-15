@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.10.0-qtim.1] - 2026-09-15
+
+qtim fork of [aikts/yandex-tracker-mcp](https://github.com/aikts/yandex-tracker-mcp) 0.10.0.
+
+### Features
+- **`issue_get_attachment_content`** — downloads an attachment by id (ids come from `issue_get_attachments`). png/jpeg/gif/webp up to 5 MB are returned inline as an image (`ImageContent`), so the model sees the picture in the tool result; anything else is written to `<tmp>/yandex-tracker-mcp/<issue>-<id>-<name>` and the path is returned. Upstream only lists attachment metadata
+  - `issue_download_attachment` on the issues protocol, the custom client (through the shared `_read`) and the caching client (passthrough, never cached)
+- **Claude Code plugin** — the repository installs as a plugin marketplace: `.claude-plugin/marketplace.json` (`qtim-yandex-tracker`), `.claude-plugin/plugin.json` with `userConfig` (`tracker_token` is `sensitive` and lands in the OS keychain, `tracker_cloud_org_id` / `tracker_org_id` in `settings.json`), `.mcp.json` that starts the server with `uv run --directory ${CLAUDE_PLUGIN_ROOT}` and passes `${user_config.*}` as `TRACKER_*` env
+
+### Documentation
+- READMEs (en/ru): fork notice, "Installing as a Claude Code plugin" section, the new tool in the tools table, `uvx --from git+…` for running the fork manually
+
 ## [0.10.0] - 2026-09-06
 
 ### Features

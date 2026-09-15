@@ -14,6 +14,8 @@ A comprehensive Model Context Protocol (MCP) server that enables AI assistants t
 
 Documentation in Russian is available [here](README_ru.md) / Документация на русском языке доступна [здесь](README_ru.md).
 
+> **qtim fork** of [aikts/yandex-tracker-mcp](https://github.com/aikts/yandex-tracker-mcp). Adds `issue_get_attachment_content` (attachments come back as images) and ships as a Claude Code plugin — see [Installing as a Claude Code plugin](#installing-as-a-claude-code-plugin). The PyPI package `yandex-tracker-mcp` and the Docker image `ghcr.io/aikts/yandex-tracker-mcp` are upstream builds without these changes.
+
 ## Features
 
 - **Complete Queue Management**: List and access all available Yandex Tracker queues with pagination support, tag retrieval, and detailed metadata
@@ -73,7 +75,7 @@ Yandex Tracker MCP Server can be one-click installed in Claude Desktop as and [e
 - [uv](https://docs.astral.sh/uv/getting-started/installation/) installed globally
 - Valid Yandex Tracker API token with appropriate permissions
 
-The following sections show how to configure the MCP server for different AI clients. You can use either `uvx yandex-tracker-mcp@latest` or the Docker image `ghcr.io/aikts/yandex-tracker-mcp:latest`. Both require these environment variables:
+The following sections show how to configure the MCP server for different AI clients. You can use either `uvx yandex-tracker-mcp@latest` (upstream PyPI build) or the Docker image `ghcr.io/aikts/yandex-tracker-mcp:latest`; to run this fork with its extra tool, replace the `uvx` command with `uvx --from git+https://github.com/zooRg/yandex-tracker-mcp yandex-tracker-mcp`. All of them require these environment variables:
 
 - Authentication (one of the following):
   - `TRACKER_TOKEN` - Your Yandex Tracker OAuth token
@@ -136,12 +138,14 @@ The following sections show how to configure the MCP server for different AI cli
 <details>
 <summary><strong>Claude Code</strong></summary>
 
-**Using uvx:**
+Prefer [Installing as a Claude Code plugin](#installing-as-a-claude-code-plugin): the token goes to the keychain instead of a config file. Manual alternative, this fork via uvx:
+
 ```bash
-claude mcp add yandex-tracker uvx yandex-tracker-mcp@latest \
+claude mcp add yandex-tracker \
   -e TRACKER_TOKEN=your_tracker_token_here \
   -e TRACKER_CLOUD_ORG_ID=your_cloud_org_id_here \
-  -e TRANSPORT=stdio
+  -e TRANSPORT=stdio \
+  -- uvx --from git+https://github.com/zooRg/yandex-tracker-mcp yandex-tracker-mcp
 ```
 
 **Using Docker:**
@@ -636,6 +640,7 @@ These four are organization-wide. A queue may accept only some of the values the
 | `issue_update_worklog` | Edit a worklog entry | `issue_id`, `worklog_id`, `duration`, `comment`, `start` |
 | `issue_delete_worklog` | Delete a worklog entry | `issue_id`, `worklog_id` |
 | `issue_get_attachments` | Attachment metadata | `issue_id`, `fields` |
+| `issue_get_attachment_content` | Attachment content (fork): png/jpeg/gif/webp up to 5 MB inline as an image, other files saved to a temp path which is returned | `issue_id`, `attachment_id` |
 | `issue_get_checklist` | The checklist, with the item ids the write tools need | `issue_id` |
 | `issue_add_checklist_items` | Append items in order, creating the checklist if there is none | `issue_id`, `items` (`text`, `checked`, `assignee`, `deadline`) |
 | `issue_update_checklist_item` | Change one item; the fields you omit keep their value | `issue_id`, `checklist_item_id`, `text`, `checked`, `assignee`, `deadline`, `clear_assignee`, `clear_deadline` |
