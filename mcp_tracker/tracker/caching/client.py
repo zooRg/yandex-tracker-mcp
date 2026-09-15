@@ -333,6 +333,18 @@ def make_cached_protocols(
         ) -> list[IssueAttachment]:
             return await self._original.issue_get_attachments(issue_id, auth=auth)
 
+        async def issue_download_attachment(
+            self,
+            issue_id: str,
+            attachment_id: str,
+            name: str,
+            *,
+            auth: YandexAuth | None = None,
+        ) -> bytes:
+            return await self._original.issue_download_attachment(
+                issue_id, attachment_id, name, auth=auth
+            )
+
         @cached(**cache_config)
         async def issues_count(
             self, query: str, *, auth: YandexAuth | None = None

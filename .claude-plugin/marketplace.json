@@ -1,0 +1,13 @@
+{
+  "name": "qtim-yandex-tracker",
+  "owner": {
+    "name": "qtim"
+  },
+  "plugins": [
+    {
+      "name": "yandex-tracker-mcp",
+      "description": "Yandex Tracker MCP Server with inline attachment images",
+      "source": "./"
+    }
+  ]
+}

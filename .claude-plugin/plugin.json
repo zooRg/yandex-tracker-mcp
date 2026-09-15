@@ -1,0 +1,28 @@
+{
+  "name": "yandex-tracker-mcp",
+  "version": "0.10.0",
+  "description": "Yandex Tracker MCP Server (qtim fork: issue_get_attachment_content returns images inline)",
+  "userConfig": {
+    "tracker_token": {
+      "type": "string",
+      "title": "Yandex Tracker OAuth Token",
+      "description": "OAuth token for the Yandex Tracker API",
+      "required": true,
+      "sensitive": true
+    },
+    "tracker_cloud_org_id": {
+      "type": "string",
+      "title": "Tracker Cloud Org Id",
+      "description": "Yandex Cloud organization id (X-Cloud-Org-ID); leave empty for a Yandex 360 org",
+      "required": false,
+      "default": ""
+    },
+    "tracker_org_id": {
+      "type": "string",
+      "title": "Tracker Org Id",
+      "description": "Yandex 360 organization id (X-Org-ID); leave empty for a Yandex Cloud org",
+      "required": false,
+      "default": ""
+    }
+  }
+}
