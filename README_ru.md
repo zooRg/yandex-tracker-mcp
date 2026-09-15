@@ -39,6 +39,19 @@ mcp-name: io.github.aikts/yandex-tracker-mcp
 
 ## Конфигурация MCP клиента
 
+### Установка как плагин Claude Code
+
+Этот репозиторий одновременно является marketplace плагинов Claude Code. Нужен [uv](https://docs.astral.sh/uv/) в `PATH`.
+
+```bash
+claude plugin marketplace add https://github.com/zooRg/yandex-tracker-mcp.git
+claude plugin install yandex-tracker-mcp@qtim-yandex-tracker
+```
+
+Затем в Claude Code выполните `/plugin configure yandex-tracker-mcp` и введите OAuth токен и идентификатор организации. Токен хранится в системном Keychain, а не в `settings.json`. В конце — `/reload-plugins`.
+
+Дополнительный инструмент этого форка: `issue_get_attachment_content(issue_id, attachment_id)` возвращает вложения png/jpeg/gif/webp (до 5 МБ) прямо картинкой; остальные файлы сохраняются во временный каталог, возвращается путь.
+
 ### Установка расширения в Claude Desktop
 
 Yandex Tracker MCP Server можно установить в один клик в Claude Desktop как [расширение](https://www.anthropic.com/engineering/desktop-extensions).

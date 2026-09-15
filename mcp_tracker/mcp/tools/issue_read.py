@@ -1,9 +1,11 @@
 """Issue read-only MCP tools."""
 
+import tempfile
+from pathlib import Path
 from typing import Annotated, Any
 
 from mcp.server import FastMCP
-from mcp.server.fastmcp import Context
+from mcp.server.fastmcp import Context, Image
 from mcp.types import ToolAnnotations
 from pydantic import Field
 
@@ -260,6 +262,51 @@ def register_issue_read_tools(settings: Settings, mcp: FastMCP[Any]) -> None:
             set_non_needed_fields_null(attachments, {f.name for f in fields})
 
         return attachments
+
+    @mcp.tool(
+        title="Get Issue Attachment Content",
+        description=(
+            "Download an attachment of a Yandex Tracker issue by attachment id "
+            "(take ids from issue_get_attachments). png/jpeg/gif/webp up to 5 MB "
+            "are returned inline as an image; anything else is saved to a temp "
+            "file and its path is returned"
+        ),
+        annotations=ToolAnnotations(readOnlyHint=True),
+    )
+    async def issue_get_attachment_content(
+        ctx: Context[Any, AppContext],
+        issue_id: IssueID,
+        attachment_id: Annotated[
+            str, Field(description="Attachment id from issue_get_attachments")
+        ],
+    ) -> Any:
+        check_issue_access(settings, issue_id)
+
+        issues = ctx.request_context.lifespan_context.issues
+        auth = get_yandex_auth(ctx)
+        attachments = await issues.issue_get_attachments(issue_id, auth=auth)
+        attachment = next((a for a in attachments if a.id == attachment_id), None)
+        if attachment is None:
+            raise ValueError(
+                f"Attachment {attachment_id} not found in issue {issue_id}"
+            )
+
+        name = Path(attachment.name).name or attachment_id
+        data = await issues.issue_download_attachment(
+            issue_id, attachment_id, name, auth=auth
+        )
+        image_format = (attachment.mimetype or "").removeprefix("image/")
+        if image_format in ("png", "jpeg", "gif", "webp") and len(data) <= 5_000_000:
+            return Image(data=data, format=image_format)
+
+        path = (
+            Path(tempfile.gettempdir())
+            / "yandex-tracker-mcp"
+            / f"{issue_id}-{attachment_id}-{name}"
+        )
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(data)
+        return str(path)
 
     @mcp.tool(
         title="Get Issue Checklist",

@@ -1045,6 +1045,21 @@ class TrackerClient(
             )
         ).root
 
+    async def issue_download_attachment(
+        self,
+        issue_id: str,
+        attachment_id: str,
+        name: str,
+        *,
+        auth: YandexAuth | None = None,
+    ) -> bytes:
+        return await self._read(
+            "GET",
+            f"v3/issues/{issue_id}/attachments/{attachment_id}/{name}",
+            auth=auth,
+            not_found=IssueNotFound(issue_id),
+        )
+
     async def users_list(
         self, per_page: int = 50, page: int = 1, *, auth: YandexAuth | None = None
     ) -> PaginatedResult[User]:

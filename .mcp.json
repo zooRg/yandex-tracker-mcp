@@ -1,0 +1,11 @@
+{
+  "yandex-tracker-mcp": {
+    "command": "uv",
+    "args": ["run", "--directory", "${CLAUDE_PLUGIN_ROOT}", "yandex-tracker-mcp"],
+    "env": {
+      "TRACKER_TOKEN": "${user_config.tracker_token}",
+      "TRACKER_CLOUD_ORG_ID": "${user_config.tracker_cloud_org_id}",
+      "TRACKER_ORG_ID": "${user_config.tracker_org_id}"
+    }
+  }
+}

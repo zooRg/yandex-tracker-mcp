@@ -42,6 +42,19 @@ You can find your organization ID in the Yandex Tracker URL or organization sett
 
 ## MCP Client Configuration
 
+### Installing as a Claude Code plugin
+
+This repository is also a Claude Code plugin marketplace. Requires [uv](https://docs.astral.sh/uv/) on `PATH`.
+
+```bash
+claude plugin marketplace add https://github.com/zooRg/yandex-tracker-mcp.git
+claude plugin install yandex-tracker-mcp@qtim-yandex-tracker
+```
+
+Then inside Claude Code run `/plugin configure yandex-tracker-mcp` and enter the OAuth token and your organization id. The token is stored in the OS keychain, not in `settings.json`. Finish with `/reload-plugins`.
+
+Extra tool in this fork: `issue_get_attachment_content(issue_id, attachment_id)` returns png/jpeg/gif/webp attachments (up to 5 MB) inline as an image; other files are saved to a temp path which is returned.
+
 ### Installing extension in Claude Desktop
 
 Yandex Tracker MCP Server can be one-click installed in Claude Desktop as and [extension](https://www.anthropic.com/engineering/desktop-extensions).
