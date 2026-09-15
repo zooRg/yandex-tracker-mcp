@@ -1,6 +1,6 @@
 {
   "name": "yandex-tracker-mcp",
-  "version": "0.10.0",
+  "version": "0.10.0-qtim.1",
   "description": "Yandex Tracker MCP Server (qtim fork: issue_get_attachment_content returns images inline)",
   "userConfig": {
     "tracker_token": {

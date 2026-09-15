@@ -12,6 +12,8 @@ mcp-name: io.github.aikts/yandex-tracker-mcp
   <img width="380" height="200" src="https://glama.ai/mcp/servers/@aikts/yandex-tracker-mcp/badge" />
 </a>
 
+> **Форк qtim** проекта [aikts/yandex-tracker-mcp](https://github.com/aikts/yandex-tracker-mcp). Добавлен инструмент `issue_get_attachment_content` (вложения приходят картинкой), репозиторий ставится как плагин Claude Code — см. [Установка как плагин Claude Code](#установка-как-плагин-claude-code). Пакет `yandex-tracker-mcp` на PyPI и Docker-образ `ghcr.io/aikts/yandex-tracker-mcp` — сборки апстрима без этих изменений.
+
 ## Возможности
 
 - **Полное управление очередями**: Список и доступ ко всем доступным очередям Яндекс.Трекера с поддержкой пагинации, получением тегов и подробными метаданными
@@ -70,7 +72,7 @@ Yandex Tracker MCP Server можно установить в один клик �
 - [uv](https://docs.astral.sh/uv/getting-started/installation/) установлен глобально
 - Действительный API токен Яндекс.Трекера с соответствующими разрешениями
 
-Следующие разделы показывают, как настроить MCP сервер для различных MCP-клиентов. Вы можете использовать либо `uvx yandex-tracker-mcp@latest`, либо Docker-образ `ghcr.io/aikts/yandex-tracker-mcp:latest`. Оба требуют следующие переменные окружения:
+Следующие разделы показывают, как настроить MCP сервер для различных MCP-клиентов. Вы можете использовать либо `uvx yandex-tracker-mcp@latest` (сборка апстрима с PyPI), либо Docker-образ `ghcr.io/aikts/yandex-tracker-mcp:latest`; чтобы запустить этот форк с его дополнительным инструментом, замените команду `uvx` на `uvx --from git+https://github.com/zooRg/yandex-tracker-mcp yandex-tracker-mcp`. Все варианты требуют следующие переменные окружения:
 
 - Аутентификация (один из следующих):
   - `TRACKER_TOKEN` - Ваш OAuth токен Яндекс.Трекера
@@ -133,12 +135,14 @@ Yandex Tracker MCP Server можно установить в один клик �
 <details>
 <summary><strong>Claude Code</strong></summary>
 
-**Используя uvx:**
+Предпочтительно — [Установка как плагин Claude Code](#установка-как-плагин-claude-code): токен уходит в Keychain, а не в конфиг. Ручная альтернатива, этот форк через uvx:
+
 ```bash
-claude mcp add yandex-tracker uvx yandex-tracker-mcp@latest \
+claude mcp add yandex-tracker \
   -e TRACKER_TOKEN=ваш_токен_трекера \
   -e TRACKER_CLOUD_ORG_ID=ваш_cloud_org_id \
-  -e TRANSPORT=stdio
+  -e TRANSPORT=stdio \
+  -- uvx --from git+https://github.com/zooRg/yandex-tracker-mcp yandex-tracker-mcp
 ```
 
 **Используя Docker:**
@@ -633,6 +637,7 @@ claude mcp add yandex-tracker docker "run --rm -i -e TRACKER_TOKEN=ваш_ток
 | `issue_update_worklog` | Изменить запись о времени | `issue_id`, `worklog_id`, `duration`, `comment`, `start` |
 | `issue_delete_worklog` | Удалить запись о времени | `issue_id`, `worklog_id` |
 | `issue_get_attachments` | Метаданные вложений | `issue_id`, `fields` |
+| `issue_get_attachment_content` | Содержимое вложения (форк): png/jpeg/gif/webp до 5 МБ — картинкой в ответе, остальные файлы — во временный файл, возвращается путь | `issue_id`, `attachment_id` |
 | `issue_get_checklist` | Чек-лист вместе с id пунктов, которые нужны инструментам записи | `issue_id` |
 | `issue_add_checklist_items` | Добавить пункты по порядку, создав чек-лист, если его не было | `issue_id`, `items` (`text`, `checked`, `assignee`, `deadline`) |
 | `issue_update_checklist_item` | Изменить один пункт; непереданные поля сохраняют значение | `issue_id`, `checklist_item_id`, `text`, `checked`, `assignee`, `deadline`, `clear_assignee`, `clear_deadline` |
