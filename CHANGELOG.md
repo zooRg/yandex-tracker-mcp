@@ -12,7 +12,7 @@ qtim fork of [aikts/yandex-tracker-mcp](https://github.com/aikts/yandex-tracker-
 - **Claude Code plugin** — the repository installs as a plugin marketplace: `.claude-plugin/marketplace.json` (`qtim-yandex-tracker`), `.claude-plugin/plugin.json` with `userConfig` (`tracker_token` is `sensitive` and lands in the OS keychain, `tracker_cloud_org_id` / `tracker_org_id` in `settings.json`), `.mcp.json` that starts the server with `uv run --directory ${CLAUDE_PLUGIN_ROOT}` and passes `${user_config.*}` as `TRACKER_*` env
 
 ### Documentation
-- READMEs (en/ru): fork notice, "Installing as a Claude Code plugin" section, the new tool in the tools table, `uvx --from git+…` for running the fork manually
+- README rewritten for the fork (Russian): install as a Claude Code plugin, the `configure` fields, what the fork adds, plugin layout, syncing with upstream, running via `uvx --from git+…`. The upstream README/README_ru are linked instead of being carried along; `README_ru.md` removed
 
 ## [0.10.0] - 2026-09-06
 
