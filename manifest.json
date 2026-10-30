@@ -361,6 +361,14 @@
       "description": "Get attachments for an issue"
     },
     {
+      "name": "issue_get_attachment_content",
+      "description": "Download an issue attachment, returning an inline image or a local file path."
+    },
+    {
+      "name": "issue_add_attachment",
+      "description": "Upload a local file to an issue or obtain a temporary attachment ID for a comment (stdio only)."
+    },
+    {
       "name": "issue_add_checklist_items",
       "description": "Add one or more items to the checklist of a Yandex Tracker issue"
     },

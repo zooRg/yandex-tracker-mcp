@@ -206,6 +206,7 @@ def make_cached_protocols(
             issue_id: str,
             *,
             text: str,
+            attachment_ids: list[str] | None = None,
             summonees: list[str] | None = None,
             maillist_summonees: list[str] | None = None,
             markup_type: str | None = None,
@@ -215,6 +216,7 @@ def make_cached_protocols(
             return await self._original.issue_add_comment(
                 issue_id,
                 text=text,
+                attachment_ids=attachment_ids,
                 summonees=summonees,
                 maillist_summonees=maillist_summonees,
                 markup_type=markup_type,
@@ -228,6 +230,7 @@ def make_cached_protocols(
             comment_id: int,
             *,
             text: str,
+            attachment_ids: list[str] | None = None,
             summonees: list[str] | None = None,
             maillist_summonees: list[str] | None = None,
             markup_type: str | None = None,
@@ -237,6 +240,7 @@ def make_cached_protocols(
                 issue_id,
                 comment_id,
                 text=text,
+                attachment_ids=attachment_ids,
                 summonees=summonees,
                 maillist_summonees=maillist_summonees,
                 markup_type=markup_type,
@@ -325,6 +329,18 @@ def make_cached_protocols(
                 issue_id,
                 worklog_id,
                 auth=auth,
+            )
+
+        async def issue_add_attachment(
+            self,
+            issue_id: str,
+            file_path: str,
+            *,
+            temporary: bool = False,
+            auth: YandexAuth | None = None,
+        ) -> IssueAttachment:
+            return await self._original.issue_add_attachment(
+                issue_id, file_path, temporary=temporary, auth=auth
             )
 
         @cached(**cache_config)

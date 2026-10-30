@@ -11,6 +11,7 @@ from pydantic import BaseModel, Field, create_model
 from mcp_tracker.mcp.context import AppContext
 from mcp_tracker.mcp.errors import TrackerError
 from mcp_tracker.mcp.params import (
+    CommentAttachmentIDsParam,
     IssueChecklistItemAssigneeParam,
     IssueChecklistItemCheckedParam,
     IssueChecklistItemClearAssigneeParam,
@@ -40,6 +41,7 @@ from mcp_tracker.tracker.proto.types.inputs import (
 from mcp_tracker.tracker.proto.types.issues import (
     ChecklistItem,
     Issue,
+    IssueAttachment,
     IssueComment,
     IssueLink,
     IssueLinkRelationship,
@@ -452,6 +454,36 @@ def register_issue_write_tools(settings: Settings, mcp: FastMCP[Any]) -> None:
         )
 
     @mcp.tool(
+        title="Upload Issue Attachment",
+        description="Upload a local file as a Yandex Tracker issue attachment (вложение задачи) "
+        "and return its ID and metadata. Stdio only; temporary uploads return a single-use "
+        "ID for issue_add_comment or issue_update_comment and are not attached yet.",
+        annotations=ToolAnnotations(readOnlyHint=False),
+    )
+    async def issue_add_attachment(
+        ctx: Context[Any, AppContext],
+        issue_id: IssueID,
+        file_path: Annotated[
+            str,
+            Field(
+                description="Absolute path to a regular file on the MCP server's machine."
+            ),
+        ],
+        temporary: Annotated[
+            bool,
+            Field(
+                description="Upload for a subsequent comment instead of attaching to the issue now."
+            ),
+        ] = False,
+    ) -> IssueAttachment:
+        check_issue_access(settings, issue_id, write=True)
+        if settings.transport != "stdio":
+            raise TrackerError("Local file uploads are only available over stdio.")
+        return await ctx.request_context.lifespan_context.issues.issue_add_attachment(
+            issue_id, file_path, temporary=temporary, auth=get_yandex_auth(ctx)
+        )
+
+    @mcp.tool(
         title="Add Issue Comment",
         description="Add a comment to a Yandex Tracker issue. There is no "
         "`template_id` parameter: check `comment_templates_get_all` (with `queue` set) "
@@ -494,12 +526,14 @@ def register_issue_write_tools(settings: Settings, mcp: FastMCP[Any]) -> None:
                 description="Whether to add the comment author to issue followers. Default: true."
             ),
         ] = True,
+        attachment_ids: CommentAttachmentIDsParam = None,
     ) -> IssueComment:
         check_issue_access(settings, issue_id, write=True)
 
         return await ctx.request_context.lifespan_context.issues.issue_add_comment(
             issue_id,
             text=text,
+            attachment_ids=attachment_ids,
             summonees=summonees,
             maillist_summonees=maillist_summonees,
             markup_type=markup_type,
@@ -545,6 +579,7 @@ def register_issue_write_tools(settings: Settings, mcp: FastMCP[Any]) -> None:
                 description="Optional markup type for comment text. Use 'md' for YFM (markdown)."
             ),
         ] = None,
+        attachment_ids: CommentAttachmentIDsParam = None,
     ) -> IssueComment:
         check_issue_access(settings, issue_id, write=True)
 
@@ -552,6 +587,7 @@ def register_issue_write_tools(settings: Settings, mcp: FastMCP[Any]) -> None:
             issue_id,
             comment_id,
             text=text,
+            attachment_ids=attachment_ids,
             summonees=summonees,
             maillist_summonees=maillist_summonees,
             markup_type=markup_type,

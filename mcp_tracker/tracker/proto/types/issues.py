@@ -190,6 +190,12 @@ WorklogFieldsEnum = Enum(  # type: ignore[misc]
 
 class IssueAttachment(CreatedMixin, BaseTrackerEntity):
     id: str
+    comment_id: str | None = Field(
+        None,
+        validation_alias=AliasChoices("commentId", "comment_id"),
+        serialization_alias="commentId",
+        exclude_if=none_excluder,
+    )
     name: str
     content: str | None = NoneExcludedField
     size: int | None = NoneExcludedField

@@ -97,6 +97,14 @@ CommentTemplateID = Annotated[
     ),
 ]
 
+CommentAttachmentIDsParam = Annotated[
+    list[str] | None,
+    Field(
+        description="Single-use IDs from issue_add_attachment with temporary=true. "
+        "Adds files to the comment; omit to leave existing attachments unchanged."
+    ),
+]
+
 # Write parameters shared by issue_create and issue_update. The update tool
 # replaces list-valued fields instead of adding to them, so its variants append
 # that clause to the same base description rather than restating it.

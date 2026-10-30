@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Features
+- **Локальные вложения** — `issue_add_attachment` загружает файл в задачу или выдаёт временный ID; `attachment_ids` в `issue_add_comment` и `issue_update_comment` прикрепляет файлы к комментариям ([OSHV-1473](https://tracker.yandex.ru/OSHV-1473)). Загрузка доступна только по stdio.
+
+### Bug Fixes
+- **Манифест и проверки документации форка** — синхронизированы с уже существующим скачиванием вложений и единственным README.
+
 ## [0.10.0-qtim.1] - 2026-09-15
 
 qtim fork of [aikts/yandex-tracker-mcp](https://github.com/aikts/yandex-tracker-mcp) 0.10.0.

@@ -1,8 +1,4 @@
-"""Both READMEs list exactly the tools the server registers - see `rules/docs.md`.
-
-`get_queue_metadata` and `queue_get_local_fields` were listed for months without ever
-existing, and the entity tools were missing in the other direction.
-"""
+"""The fork documents attachment additions locally and links upstream for other tools."""
 
 import re
 from pathlib import Path
@@ -12,7 +8,13 @@ import pytest
 from tests.mcp.server.tool_listing import TOOL_NAMES
 
 ROOT = Path(__file__).parents[3]
-README_NAMES = ["README.md", "README_ru.md"]
+README_NAMES = ["README.md"]
+FORK_DOCUMENTED_TOOLS = {
+    "issue_get_attachment_content",
+    "issue_add_attachment",
+    "issue_add_comment",
+    "issue_update_comment",
+}
 READMES = {name: (ROOT / name).read_text(encoding="utf-8") for name in README_NAMES}
 
 TOOL_CELL_PATTERN = re.compile(r"^`([a-z][a-z0-9_]*)`$")
@@ -45,7 +47,7 @@ LISTED = {name: listed_tools(text) for name, text in READMES.items()}
 
 
 @pytest.mark.parametrize("readme_name", README_NAMES)
-@pytest.mark.parametrize("tool_name", sorted(TOOL_NAMES))
+@pytest.mark.parametrize("tool_name", sorted(FORK_DOCUMENTED_TOOLS))
 def test_every_tool_is_listed(tool_name: str, readme_name: str) -> None:
     assert tool_name in LISTED[readme_name], (
         f"'{tool_name}' has no row in {readme_name}'s tool tables"

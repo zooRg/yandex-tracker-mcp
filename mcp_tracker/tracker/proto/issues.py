@@ -47,6 +47,7 @@ class IssueProtocol(Protocol):
         issue_id: str,
         *,
         text: str,
+        attachment_ids: list[str] | None = None,
         summonees: list[str] | None = None,
         maillist_summonees: list[str] | None = None,
         markup_type: str | None = None,
@@ -59,6 +60,7 @@ class IssueProtocol(Protocol):
         comment_id: int,
         *,
         text: str,
+        attachment_ids: list[str] | None = None,
         summonees: list[str] | None = None,
         maillist_summonees: list[str] | None = None,
         markup_type: str | None = None,
@@ -127,6 +129,14 @@ class IssueProtocol(Protocol):
         *,
         auth: YandexAuth | None = None,
     ) -> None: ...
+    async def issue_add_attachment(
+        self,
+        issue_id: str,
+        file_path: str,
+        *,
+        temporary: bool = False,
+        auth: YandexAuth | None = None,
+    ) -> IssueAttachment: ...
     async def issue_get_attachments(
         self, issue_id: str, *, auth: YandexAuth | None = None
     ) -> list[IssueAttachment]: ...

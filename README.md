@@ -1,6 +1,6 @@
 # Yandex Tracker MCP — форк qtim
 
-Форк [aikts/yandex-tracker-mcp](https://github.com/aikts/yandex-tracker-mcp) (база — апстрим 0.10.0) с одним отличием: инструмент `issue_get_attachment_content`, который скачивает вложения задачи и отдаёт картинки прямо в ответ модели. Ставится как плагин Claude Code из этого репозитория.
+Форк [aikts/yandex-tracker-mcp](https://github.com/aikts/yandex-tracker-mcp) (база — апстрим 0.10.0) с загрузкой локальных файлов в задачи и комментарии, скачиванием вложений и просмотром картинок прямо в ответе модели. Ставится как плагин Claude Code из этого репозитория.
 
 Полная документация по инструментам, переменным окружения, Docker и HTTP-транспорту — в апстриме: [README](https://github.com/aikts/yandex-tracker-mcp#readme) / [README_ru](https://github.com/aikts/yandex-tracker-mcp/blob/main/README_ru.md).
 
@@ -43,7 +43,28 @@ claude plugin install yandex-tracker-mcp@qtim-yandex-tracker
 
 В апстриме есть только метаданные вложений (`issue_get_attachments`).
 
-Правки относительно апстрима: `mcp_tracker/mcp/tools/issue_read.py` (инструмент), `mcp_tracker/tracker/proto/issues.py`, `mcp_tracker/tracker/custom/client.py`, `mcp_tracker/tracker/caching/client.py` (метод `issue_download_attachment`).
+| Инструмент | Назначение | Основные аргументы |
+|---|---|---|
+| `issue_get_attachment_content` | Скачать вложение или показать изображение | `issue_id`, `attachment_id` |
+| `issue_add_attachment` | Загрузить локальный файл, получить ID и метаданные | `issue_id`, `file_path`, `temporary` |
+| `issue_add_comment` | Создать комментарий с вложениями | `issue_id`, `text`, `attachment_ids` |
+| `issue_update_comment` | Добавить вложения в существующий комментарий | `issue_id`, `comment_id`, `text`, `attachment_ids` |
+
+Загрузка локальных файлов доступна только при `TRANSPORT=stdio`: `file_path` — абсолютный путь к обычному файлу на машине MCP-сервера. HTTP/SSE-вызовы отклоняются до чтения файла. Действуют `TRACKER_READ_ONLY`, `TRACKER_READ_ONLY_QUEUES` и `TRACKER_LIMIT_QUEUES`. Файлы передаются потоково; ошибки доступа, ограничения размера и таймаут API возвращаются вызывающему клиенту (`TRACKER_API_TIMEOUT`, по умолчанию 10 секунд).
+
+Чтобы прикрепить файл к задаче, вызовите `issue_add_attachment(issue_id="TEST-1", file_path="/absolute/report.pdf")`.
+
+Чтобы прикрепить файлы к комментарию:
+
+1. Для каждого файла вызовите `issue_add_attachment(issue_id="TEST-1", file_path="/absolute/report.pdf", temporary=true)`.
+2. Передайте полученные `id` в `attachment_ids` инструмента `issue_add_comment` или `issue_update_comment` той же задачи. Для редактирования сначала прочитайте текущий текст через `issue_get_comments` и передайте его без изменений, если нужно только добавить файлы.
+3. Проверьте результат через `issue_get_attachments`: файлы комментария также видны во вложениях задачи, а их `commentId` совпадает с `longId` комментария из `issue_get_comments` (в селекторе `fields` используйте `comment_id`).
+
+Временный файл ещё не прикреплён к задаче; его ID можно использовать только один раз. `attachment_ids` добавляет файлы, а пропуск параметра сохраняет существующие вложения. Загрузка и публикация комментария — отдельные операции: при ошибке публикации проверьте состояние перед повтором, чтобы избежать дубликатов. Если включён Redis-кэш, повторные чтения могут отставать на его TTL.
+
+Контракт API: [загрузка в задачу](https://yandex.ru/support/tracker/en/api/issues/post-attachment), [временные файлы](https://yandex.ru/support/tracker/ru/api/issues/temp-attachment), [редактирование комментария](https://yandex.ru/support/tracker/en/api/issues/edit-comment).
+
+Инструменты вложений находятся в `mcp_tracker/mcp/tools/issue_read.py` и `issue_write.py`; HTTP-методы, протокол и обёртка кэша — в `mcp_tracker/tracker/`.
 
 ## Устройство плагина
 
@@ -59,7 +80,7 @@ git fetch upstream
 git merge upstream/main
 ```
 
-Конфликты возможны только в четырёх файлах из раздела «Что добавлено». После мержа — поднять `version` в `.claude-plugin/plugin.json` и записать изменения в `CHANGELOG.md`.
+При синхронизации проверьте инструменты вложений, комментариев и их протокольные методы. После мержа — поднять `version` в `.claude-plugin/plugin.json` и записать изменения в `CHANGELOG.md`.
 
 ## Запуск без плагина
 

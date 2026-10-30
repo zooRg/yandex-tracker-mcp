@@ -22,6 +22,7 @@ class TestIssueGetAttachments:
             "mimetype": "text/plain",
             "size": 1024,
         }
+        attachment_data["commentId"] = "comment-long-id"
         attachments_response = [attachment_data]
 
         with aioresponses() as m:
@@ -36,6 +37,8 @@ class TestIssueGetAttachments:
             assert len(result) == 1
             assert isinstance(result[0], IssueAttachment)
             assert result[0].name == "test_file.txt"
+            assert result[0].comment_id == "comment-long-id"
+            assert result[0].model_dump(by_alias=True)["commentId"] == "comment-long-id"
 
     async def test_not_found(self, tracker_client: TrackerClient) -> None:
         with aioresponses() as m:

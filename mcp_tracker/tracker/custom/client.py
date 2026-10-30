@@ -7,11 +7,12 @@ from asyncio import CancelledError
 from collections.abc import AsyncIterator, Collection, Mapping, Sequence
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import Any, Literal
 
 import jwt
 import yandexcloud
-from aiohttp import ClientResponse, ClientSession, ClientTimeout
+from aiohttp import ClientResponse, ClientSession, ClientTimeout, FormData
 from pydantic import BaseModel, Field, RootModel
 from yandex.cloud.iam.v1.iam_token_service_pb2 import CreateIamTokenRequest
 from yandex.cloud.iam.v1.iam_token_service_pb2_grpc import IamTokenServiceStub
@@ -417,6 +418,7 @@ class TrackerClient(
         auth: YandexAuth | None,
         params: Mapping[str, Any] | None = None,
         json: Any = None,
+        data: FormData | None = None,
         not_found: YandexTrackerError | None = None,
         conflict: YandexTrackerError | None = None,
         allow_statuses: Collection[int] = (),
@@ -442,7 +444,7 @@ class TrackerClient(
 
         try:
             async with self._session.request(
-                method, url, headers=headers, params=params, json=json
+                method, url, headers=headers, params=params, json=json, data=data
             ) as response:
                 if response.status not in allow_statuses:
                     if not_found is not None and response.status == 404:
@@ -467,6 +469,7 @@ class TrackerClient(
         auth: YandexAuth | None,
         params: Mapping[str, Any] | None = None,
         json: Any = None,
+        data: FormData | None = None,
         not_found: YandexTrackerError | None = None,
         conflict: YandexTrackerError | None = None,
     ) -> bytes:
@@ -477,6 +480,7 @@ class TrackerClient(
             auth=auth,
             params=params,
             json=json,
+            data=data,
             not_found=not_found,
             conflict=conflict,
         ) as response:
@@ -809,6 +813,7 @@ class TrackerClient(
         issue_id: str,
         *,
         text: str,
+        attachment_ids: list[str] | None = None,
         summonees: list[str] | None = None,
         maillist_summonees: list[str] | None = None,
         markup_type: str | None = None,
@@ -817,6 +822,8 @@ class TrackerClient(
     ) -> IssueComment:
         """Добавить комментарий к задаче."""
         body: dict[str, Any] = {"text": text}
+        if attachment_ids is not None:
+            body["attachmentIds"] = attachment_ids
         if summonees is not None:
             body["summonees"] = summonees
         if maillist_summonees is not None:
@@ -845,6 +852,7 @@ class TrackerClient(
         comment_id: int,
         *,
         text: str,
+        attachment_ids: list[str] | None = None,
         summonees: list[str] | None = None,
         maillist_summonees: list[str] | None = None,
         markup_type: str | None = None,
@@ -852,6 +860,8 @@ class TrackerClient(
     ) -> IssueComment:
         """Изменить комментарий в задаче."""
         body: dict[str, Any] = {"text": text}
+        if attachment_ids is not None:
+            body["attachmentIds"] = attachment_ids
         if summonees is not None:
             body["summonees"] = summonees
         if maillist_summonees is not None:
@@ -1032,6 +1042,38 @@ class TrackerClient(
             auth=auth,
             not_found=IssueNotFound(issue_id),
         )
+
+    async def issue_add_attachment(
+        self,
+        issue_id: str,
+        file_path: str,
+        *,
+        temporary: bool = False,
+        auth: YandexAuth | None = None,
+    ) -> IssueAttachment:
+        path = Path(file_path)
+        if not path.is_absolute() or not path.is_file():
+            raise ValueError("file_path must be an absolute path to a regular file")
+
+        with path.open("rb") as file:
+            form = FormData()
+            form.add_field(
+                "file",
+                file,
+                filename=path.name,
+                content_type="application/octet-stream",
+            )
+            return IssueAttachment.model_validate_json(
+                await self._read(
+                    "POST",
+                    "v3/attachments"
+                    if temporary
+                    else f"v3/issues/{issue_id}/attachments",
+                    auth=auth,
+                    data=form,
+                    not_found=None if temporary else IssueNotFound(issue_id),
+                )
+            )
 
     async def issue_get_attachments(
         self, issue_id: str, *, auth: YandexAuth | None = None
